@@ -18,25 +18,25 @@ const ConfigVersionHeader = "X-Concourse-Config-Version"
 const DefaultTeamName = "main"
 
 type Config struct {
-	Groups        GroupConfigs     `json:"groups,omitempty"`
-	VarSources    VarSourceConfigs `json:"var_sources,omitempty"`
-	Resources     ResourceConfigs  `json:"resources,omitempty"`
-	ResourceTypes ResourceTypes    `json:"resource_types,omitempty"`
-	Prototypes    Prototypes       `json:"prototypes,omitempty"`
-	Jobs          JobConfigs       `json:"jobs,omitempty"`
-	Display       *DisplayConfig   `json:"display,omitempty"`
+	Groups        GroupConfigs     `json:"groups,omitempty" yaml:"groups,omitempty"`
+	VarSources    VarSourceConfigs `json:"var_sources,omitempty" yaml:"var_sources,omitempty"`
+	Resources     ResourceConfigs  `json:"resources,omitempty" yaml:"resources,omitempty"`
+	ResourceTypes ResourceTypes    `json:"resource_types,omitempty" yaml:"resource_types,omitempty"`
+	Prototypes    Prototypes       `json:"prototypes,omitempty" yaml:"prototypes,omitempty"`
+	Jobs          JobConfigs       `json:"jobs,omitempty" yaml:"jobs,omitempty"`
+	Display       *DisplayConfig   `json:"display,omitempty" yaml:"display,omitempty"`
 }
 
 func UnmarshalConfig(payload []byte, config interface{}) error {
 	// a 'skeleton' of Config, specifying only the toplevel fields
 	type skeletonConfig struct {
-		Groups        interface{} `json:"groups,omitempty"`
-		VarSources    interface{} `json:"var_sources,omitempty"`
-		Resources     interface{} `json:"resources,omitempty"`
-		ResourceTypes interface{} `json:"resource_types,omitempty"`
-		Prototypes    interface{} `json:"prototypes,omitempty"`
-		Jobs          interface{} `json:"jobs,omitempty"`
-		Display       interface{} `json:"display,omitempty"`
+		Groups        interface{} `json:"groups,omitempty" yaml:"groups,omitempty"`
+		VarSources    interface{} `json:"var_sources,omitempty" yaml:"var_sources,omitempty"`
+		Resources     interface{} `json:"resources,omitempty" yaml:"resources,omitempty"`
+		ResourceTypes interface{} `json:"resource_types,omitempty" yaml:"resource_types,omitempty"`
+		Prototypes    interface{} `json:"prototypes,omitempty" yaml:"prototypes,omitempty"`
+		Jobs          interface{} `json:"jobs,omitempty" yaml:"jobs,omitempty"`
+		Display       interface{} `json:"display,omitempty" yaml:"display,omitempty"`
 	}
 
 	var stripped skeletonConfig
@@ -57,9 +57,9 @@ func UnmarshalConfig(payload []byte, config interface{}) error {
 }
 
 type GroupConfig struct {
-	Name      string   `json:"name"`
-	Jobs      []string `json:"jobs,omitempty"`
-	Resources []string `json:"resources,omitempty"`
+	Name      string   `json:"name" yaml:"name"`
+	Jobs      []string `json:"jobs,omitempty" yaml:"jobs,omitempty"`
+	Resources []string `json:"resources,omitempty" yaml:"resources,omitempty"`
 }
 
 type GroupConfigs []GroupConfig
@@ -75,9 +75,9 @@ func (groups GroupConfigs) Lookup(name string) (GroupConfig, int, bool) {
 }
 
 type VarSourceConfig struct {
-	Name   string      `json:"name"`
-	Type   string      `json:"type"`
-	Config interface{} `json:"config"`
+	Name   string      `json:"name" yaml:"name"`
+	Type   string      `json:"type" yaml:"type"`
+	Config interface{} `json:"config" yaml:"config"`
 }
 
 type VarSourceConfigs []VarSourceConfig
@@ -176,44 +176,44 @@ func (c VarSourceConfigs) OrderByDependency() (VarSourceConfigs, error) {
 }
 
 type ResourceConfig struct {
-	Name                 string      `json:"name"`
-	OldName              string      `json:"old_name,omitempty"`
-	Public               bool        `json:"public,omitempty"`
-	WebhookToken         string      `json:"webhook_token,omitempty"`
-	Type                 string      `json:"type"`
-	Source               Source      `json:"source"`
-	CheckEvery           *CheckEvery `json:"check_every,omitempty"`
-	CheckTimeout         string      `json:"check_timeout,omitempty"`
-	Tags                 Tags        `json:"tags,omitempty"`
-	Version              Version     `json:"version,omitempty"`
-	Icon                 string      `json:"icon,omitempty"`
-	ExposeBuildCreatedBy bool        `json:"expose_build_created_by,omitempty"`
+	Name                 string      `json:"name" yaml:"name"`
+	OldName              string      `json:"old_name,omitempty" yaml:"old_name,omitempty"`
+	Public               bool        `json:"public,omitempty" yaml:"public,omitempty"`
+	WebhookToken         string      `json:"webhook_token,omitempty" yaml:"webhook_token,omitempty"`
+	Type                 string      `json:"type" yaml:"type"`
+	Source               Source      `json:"source" yaml:"source"`
+	CheckEvery           *CheckEvery `json:"check_every,omitempty" yaml:"check_every,omitempty"`
+	CheckTimeout         string      `json:"check_timeout,omitempty" yaml:"check_timeout,omitempty"`
+	Tags                 Tags        `json:"tags,omitempty" yaml:"tags,omitempty"`
+	Version              Version     `json:"version,omitempty" yaml:"version,omitempty"`
+	Icon                 string      `json:"icon,omitempty" yaml:"icon,omitempty"`
+	ExposeBuildCreatedBy bool        `json:"expose_build_created_by,omitempty" yaml:"expose_build_created_by,omitempty"`
 }
 
 type ResourceType struct {
-	Name       string      `json:"name"`
-	Type       string      `json:"type"`
-	Source     Source      `json:"source"`
-	Defaults   Source      `json:"defaults,omitempty"`
-	Privileged bool        `json:"privileged,omitempty"`
-	CheckEvery *CheckEvery `json:"check_every,omitempty"`
-	Tags       Tags        `json:"tags,omitempty"`
-	Params     Params      `json:"params,omitempty"`
+	Name       string      `json:"name" yaml:"name"`
+	Type       string      `json:"type" yaml:"type"`
+	Source     Source      `json:"source" yaml:"source"`
+	Defaults   Source      `json:"defaults,omitempty" yaml:"defaults,omitempty"`
+	Privileged bool        `json:"privileged,omitempty" yaml:"privileged,omitempty"`
+	CheckEvery *CheckEvery `json:"check_every,omitempty" yaml:"check_every,omitempty"`
+	Tags       Tags        `json:"tags,omitempty" yaml:"tags,omitempty"`
+	Params     Params      `json:"params,omitempty" yaml:"params,omitempty"`
 }
 
 type Prototype struct {
-	Name       string      `json:"name"`
-	Type       string      `json:"type"`
-	Source     Source      `json:"source"`
-	Defaults   Source      `json:"defaults,omitempty"`
-	Privileged bool        `json:"privileged,omitempty"`
-	CheckEvery *CheckEvery `json:"check_every,omitempty"`
-	Tags       Tags        `json:"tags,omitempty"`
-	Params     Params      `json:"params,omitempty"`
+	Name       string      `json:"name" yaml:"name"`
+	Type       string      `json:"type" yaml:"type"`
+	Source     Source      `json:"source" yaml:"source"`
+	Defaults   Source      `json:"defaults,omitempty" yaml:"defaults,omitempty"`
+	Privileged bool        `json:"privileged,omitempty" yaml:"privileged,omitempty"`
+	CheckEvery *CheckEvery `json:"check_every,omitempty" yaml:"check_every,omitempty"`
+	Tags       Tags        `json:"tags,omitempty" yaml:"tags,omitempty"`
+	Params     Params      `json:"params,omitempty" yaml:"params,omitempty"`
 }
 
 type DisplayConfig struct {
-	BackgroundImage string `json:"background_image,omitempty"`
+	BackgroundImage string `json:"background_image,omitempty" yaml:"background_image,omitempty"`
 }
 
 type CheckEvery struct {

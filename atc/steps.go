@@ -293,14 +293,14 @@ var StepPrecedence = []StepDetector{
 }
 
 type GetStep struct {
-	Name     string         `json:"get"`
-	Resource string         `json:"resource,omitempty"`
-	Version  *VersionConfig `json:"version,omitempty"`
-	Params   Params         `json:"params,omitempty"`
-	Passed   []string       `json:"passed,omitempty"`
-	Trigger  bool           `json:"trigger,omitempty"`
-	Tags     Tags           `json:"tags,omitempty"`
-	Timeout  string         `json:"timeout,omitempty"`
+	Name     string         `json:"get" yaml:"get"`
+	Resource string         `json:"resource,omitempty" yaml:"resource,omitempty"`
+	Version  *VersionConfig `json:"version,omitempty" yaml:"version,omitempty"`
+	Params   Params         `json:"params,omitempty" yaml:"params,omitempty"`
+	Passed   []string       `json:"passed,omitempty" yaml:"passed,omitempty"`
+	Trigger  bool           `json:"trigger,omitempty" yaml:"trigger,omitempty"`
+	Tags     Tags           `json:"tags,omitempty" yaml:"tags,omitempty"`
+	Timeout  string         `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 }
 
 func (step *GetStep) ResourceName() string {
@@ -316,14 +316,14 @@ func (step *GetStep) Visit(v StepVisitor) error {
 }
 
 type PutStep struct {
-	Name      string        `json:"put"`
-	Resource  string        `json:"resource,omitempty"`
-	Params    Params        `json:"params,omitempty"`
-	Inputs    *InputsConfig `json:"inputs,omitempty"`
-	Tags      Tags          `json:"tags,omitempty"`
-	GetParams Params        `json:"get_params,omitempty"`
-	Timeout   string        `json:"timeout,omitempty"`
-	NoGet     bool          `json:"no_get,omitempty"`
+	Name      string        `json:"put" yaml:"put"`
+	Resource  string        `json:"resource,omitempty" yaml:"resource,omitempty"`
+	Params    Params        `json:"params,omitempty" yaml:"params,omitempty"`
+	Inputs    *InputsConfig `json:"inputs,omitempty" yaml:"inputs,omitempty"`
+	Tags      Tags          `json:"tags,omitempty" yaml:"tags,omitempty"`
+	GetParams Params        `json:"get_params,omitempty" yaml:"get_params,omitempty"`
+	Timeout   string        `json:"timeout,omitempty" yaml:"timeout,omitempty"`
+	NoGet     bool          `json:"no_get,omitempty" yaml:"no_get,omitempty"`
 }
 
 func (step *PutStep) ResourceName() string {
@@ -339,19 +339,19 @@ func (step *PutStep) Visit(v StepVisitor) error {
 }
 
 type TaskStep struct {
-	Name              string            `json:"task"`
-	Privileged        bool              `json:"privileged,omitempty"`
-	Hermetic          bool              `json:"hermetic,omitempty"`
-	ConfigPath        string            `json:"file,omitempty"`
-	Limits            *ContainerLimits  `json:"container_limits,omitempty"`
-	Config            *TaskConfig       `json:"config,omitempty"`
-	Params            TaskEnv           `json:"params,omitempty"`
-	Vars              Params            `json:"vars,omitempty"`
-	Tags              Tags              `json:"tags,omitempty"`
-	InputMapping      map[string]string `json:"input_mapping,omitempty"`
-	OutputMapping     map[string]string `json:"output_mapping,omitempty"`
-	ImageArtifactName string            `json:"image,omitempty"`
-	Timeout           string            `json:"timeout,omitempty"`
+	Name              string            `json:"task" yaml:"task"`
+	Privileged        bool              `json:"privileged,omitempty" yaml:"privileged,omitempty"`
+	Hermetic          bool              `json:"hermetic,omitempty" yaml:"hermetic,omitempty"`
+	ConfigPath        string            `json:"file,omitempty" yaml:"file,omitempty"`
+	Limits            *ContainerLimits  `json:"container_limits,omitempty" yaml:"container_limits,omitempty"`
+	Config            *TaskConfig       `json:"config,omitempty" yaml:"config,omitempty"`
+	Params            TaskEnv           `json:"params,omitempty" yaml:"params,omitempty"`
+	Vars              Params            `json:"vars,omitempty" yaml:"vars,omitempty"`
+	Tags              Tags              `json:"tags,omitempty" yaml:"tags,omitempty"`
+	InputMapping      map[string]string `json:"input_mapping,omitempty" yaml:"input_mapping,omitempty"`
+	OutputMapping     map[string]string `json:"output_mapping,omitempty" yaml:"output_mapping,omitempty"`
+	ImageArtifactName string            `json:"image,omitempty" yaml:"image,omitempty"`
+	Timeout           string            `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 }
 
 func (step *TaskStep) Visit(v StepVisitor) error {
@@ -359,13 +359,13 @@ func (step *TaskStep) Visit(v StepVisitor) error {
 }
 
 type RunStep struct {
-	Message    string           `json:"run"`
-	Type       string           `json:"type"`
-	Params     Params           `json:"params,omitempty"`
-	Privileged bool             `json:"privileged,omitempty"`
-	Tags       Tags             `json:"tags,omitempty"`
-	Limits     *ContainerLimits `json:"container_limits,omitempty"`
-	Timeout    string           `json:"timeout,omitempty"`
+	Message    string           `json:"run" yaml:"run"`
+	Type       string           `json:"type" yaml:"type"`
+	Params     Params           `json:"params,omitempty" yaml:"params,omitempty"`
+	Privileged bool             `json:"privileged,omitempty" yaml:"privileged,omitempty"`
+	Tags       Tags             `json:"tags,omitempty" yaml:"tags,omitempty"`
+	Limits     *ContainerLimits `json:"container_limits,omitempty" yaml:"container_limits,omitempty"`
+	Timeout    string           `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 
 	// XXX(prototypes): inputs, outputs, input_mapping, output_mapping?
 	// see https://github.com/concourse/rfcs/pull/103

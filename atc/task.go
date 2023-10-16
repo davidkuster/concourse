@@ -11,40 +11,40 @@ import (
 
 type TaskConfig struct {
 	// The platform the task must run on (e.g. linux, windows).
-	Platform string `json:"platform,omitempty"`
+	Platform string `json:"platform,omitempty" yaml:"platform,omitempty"`
 
 	// Optional string specifying an image to use for the build. Depending on the
 	// platform, this may or may not be required (e.g. Windows/OS X vs. Linux).
-	RootfsURI string `json:"rootfs_uri,omitempty"`
+	RootfsURI string `json:"rootfs_uri,omitempty" yaml:"rootfs_uri,omitempty"`
 
-	ImageResource *ImageResource `json:"image_resource,omitempty"`
+	ImageResource *ImageResource `json:"image_resource,omitempty" yaml:"image_resource,omitempty"`
 
 	// Limits to set on the Task Container
-	Limits *ContainerLimits `json:"container_limits,omitempty"`
+	Limits *ContainerLimits `json:"container_limits,omitempty" yaml:"container_limits,omitempty"`
 
 	// Parameters to pass to the task via environment variables.
-	Params TaskEnv `json:"params,omitempty"`
+	Params TaskEnv `json:"params,omitempty" yaml:"params,omitempty"`
 
 	// Script to execute.
-	Run TaskRunConfig `json:"run,omitempty"`
+	Run TaskRunConfig `json:"run,omitempty" yaml:"run,omitempty"`
 
 	// The set of (logical, name-only) inputs required by the task.
-	Inputs []TaskInputConfig `json:"inputs,omitempty"`
+	Inputs []TaskInputConfig `json:"inputs,omitempty" yaml:"inputs,omitempty"`
 
 	// The set of (logical, name-only) outputs provided by the task.
-	Outputs []TaskOutputConfig `json:"outputs,omitempty"`
+	Outputs []TaskOutputConfig `json:"outputs,omitempty" yaml:"outputs,omitempty"`
 
 	// Path to cached directory that will be shared between builds for the same task.
-	Caches []TaskCacheConfig `json:"caches,omitempty"`
+	Caches []TaskCacheConfig `json:"caches,omitempty" yaml:"caches,omitempty"`
 }
 
 type ImageResource struct {
-	Name    string  `json:"name"`
-	Type    string  `json:"type"`
-	Source  Source  `json:"source"`
-	Version Version `json:"version,omitempty"`
-	Params  Params  `json:"params,omitempty"`
-	Tags    Tags    `json:"tags,omitempty"`
+	Name    string  `json:"name" yaml:"name"`
+	Type    string  `json:"type" yaml:"type"`
+	Source  Source  `json:"source" yaml:"source"`
+	Version Version `json:"version,omitempty" yaml:"version,omitempty"`
+	Params  Params  `json:"params,omitempty" yaml:"params,omitempty"`
+	Tags    Tags    `json:"tags,omitempty" yaml:"tags,omitempty"`
 }
 
 func (ir *ImageResource) ApplySourceDefaults(resourceTypes ResourceTypes) {
@@ -134,27 +134,27 @@ func (config TaskConfig) validateInputContainsNames() []string {
 }
 
 type TaskRunConfig struct {
-	Path string   `json:"path"`
-	Args []string `json:"args,omitempty"`
-	Dir  string   `json:"dir,omitempty"`
+	Path string   `json:"path" yaml:"path"`
+	Args []string `json:"args,omitempty" yaml:"args,omitempty"`
+	Dir  string   `json:"dir,omitempty" yaml:"dir,omitempty"`
 
 	// The user that the task will run as (defaults to whatever the docker image specifies)
-	User string `json:"user,omitempty"`
+	User string `json:"user,omitempty" yaml:"user,omitempty"`
 }
 
 type TaskInputConfig struct {
-	Name     string `json:"name"`
-	Path     string `json:"path,omitempty"`
-	Optional bool   `json:"optional,omitempty"`
+	Name     string `json:"name" yaml:"name"`
+	Path     string `json:"path,omitempty" yaml:"path,omitempty"`
+	Optional bool   `json:"optional,omitempty" yaml:"optional,omitempty"`
 }
 
 type TaskOutputConfig struct {
-	Name string `json:"name"`
-	Path string `json:"path,omitempty"`
+	Name string `json:"name" yaml:"name"`
+	Path string `json:"path,omitempty" yaml:"path,omitempty"`
 }
 
 type TaskCacheConfig struct {
-	Path string `json:"path,omitempty"`
+	Path string `json:"path,omitempty" yaml:"path,omitempty"`
 }
 
 type TaskEnv map[string]string

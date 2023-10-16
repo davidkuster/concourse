@@ -1,32 +1,32 @@
 package atc
 
 type JobConfig struct {
-	Name    string `json:"name"`
-	OldName string `json:"old_name,omitempty"`
-	Public  bool   `json:"public,omitempty"`
+	Name    string `json:"name" yaml:"name"`
+	OldName string `json:"old_name,omitempty" yaml:"old_name,omitempty"`
+	Public  bool   `json:"public,omitempty" yaml:"public,omitempty"`
 
-	DisableManualTrigger bool     `json:"disable_manual_trigger,omitempty"`
-	Serial               bool     `json:"serial,omitempty"`
-	Interruptible        bool     `json:"interruptible,omitempty"`
-	SerialGroups         []string `json:"serial_groups,omitempty"`
-	RawMaxInFlight       int      `json:"max_in_flight,omitempty"`
-	BuildLogsToRetain    int      `json:"build_logs_to_retain,omitempty"`
+	DisableManualTrigger bool     `json:"disable_manual_trigger,omitempty" yaml:"disable_manual_trigger,omitempty"`
+	Serial               bool     `json:"serial,omitempty" yaml:"serial,omitempty"`
+	Interruptible        bool     `json:"interruptible,omitempty" yaml:"interruptible,omitempty"`
+	SerialGroups         []string `json:"serial_groups,omitempty" yaml:"serial_groups,omitempty"`
+	RawMaxInFlight       int      `json:"max_in_flight,omitempty" yaml:"max_in_flight,omitempty"`
+	BuildLogsToRetain    int      `json:"build_logs_to_retain,omitempty" yaml:"build_logs_to_retain,omitempty"`
 
-	BuildLogRetention *BuildLogRetention `json:"build_log_retention,omitempty"`
+	BuildLogRetention *BuildLogRetention `json:"build_log_retention,omitempty" yaml:"build_log_retention,omitempty"`
 
-	OnSuccess *Step `json:"on_success,omitempty"`
-	OnFailure *Step `json:"on_failure,omitempty"`
-	OnAbort   *Step `json:"on_abort,omitempty"`
-	OnError   *Step `json:"on_error,omitempty"`
-	Ensure    *Step `json:"ensure,omitempty"`
+	OnSuccess *Step `json:"on_success,omitempty" yaml:"on_success,omitempty"`
+	OnFailure *Step `json:"on_failure,omitempty" yaml:"on_failure,omitempty"`
+	OnAbort   *Step `json:"on_abort,omitempty" yaml:"on_abort,omitempty"`
+	OnError   *Step `json:"on_error,omitempty" yaml:"on_error,omitempty"`
+	Ensure    *Step `json:"ensure,omitempty" yaml:"ensure,omitempty"`
 
-	PlanSequence []Step `json:"plan"`
+	PlanSequence []Step `json:"plan" yaml:"plan"`
 }
 
 type BuildLogRetention struct {
-	Builds                 int `json:"builds,omitempty"`
-	MinimumSucceededBuilds int `json:"minimum_succeeded_builds,omitempty"`
-	Days                   int `json:"days,omitempty"`
+	Builds                 int `json:"builds,omitempty" yaml:"builds,omitempty"`
+	MinimumSucceededBuilds int `json:"minimum_succeeded_builds,omitempty" yaml:"minimum_succeeded_builds,omitempty"`
+	Days                   int `json:"days,omitempty" yaml:"days,omitempty"`
 }
 
 func (config JobConfig) Step() Step {
