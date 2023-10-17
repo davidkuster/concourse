@@ -26,6 +26,19 @@ func (src Source) MarshalJSON() ([]byte, error) {
 	return json.Marshal(strKeys)
 }
 
+func (src Source) MarshalYAML() (interface{}, error) {
+	if src == nil {
+		return nil, nil
+	}
+
+	strKeys, err := stringifyKeys(src)
+	if err != nil {
+		return nil, err
+	}
+
+	return strKeys, nil
+}
+
 // Merge returns a new Source that merged other into src. The original src is
 // not updated.
 func (src Source) Merge(other Source) Source {
@@ -60,6 +73,19 @@ func (ps Params) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(strKeys)
+}
+
+func (ps Params) MarshalYAML() (interface{}, error) {
+	if ps == nil {
+		return nil, nil
+	}
+
+	strKeys, err := stringifyKeys(ps)
+	if err != nil {
+		return nil, err
+	}
+
+	return strKeys, nil
 }
 
 type Version map[string]string

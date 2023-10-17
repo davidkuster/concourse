@@ -20,8 +20,8 @@ const DefaultTeamName = "main"
 type Config struct {
 	Groups        GroupConfigs     `json:"groups,omitempty" yaml:"groups,omitempty"`
 	VarSources    VarSourceConfigs `json:"var_sources,omitempty" yaml:"var_sources,omitempty"`
-	Resources     ResourceConfigs  `json:"resources,omitempty" yaml:"resources,omitempty"`
 	ResourceTypes ResourceTypes    `json:"resource_types,omitempty" yaml:"resource_types,omitempty"`
+	Resources     ResourceConfigs  `json:"resources,omitempty" yaml:"resources,omitempty"`
 	Prototypes    Prototypes       `json:"prototypes,omitempty" yaml:"prototypes,omitempty"`
 	Jobs          JobConfigs       `json:"jobs,omitempty" yaml:"jobs,omitempty"`
 	Display       *DisplayConfig   `json:"display,omitempty" yaml:"display,omitempty"`
@@ -257,6 +257,18 @@ func (c *CheckEvery) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal("")
+}
+
+func (c *CheckEvery) MarshalYAML() (interface{}, error) {
+	if c.Never {
+		return "never", nil
+	}
+
+	if c.Interval != 0 {
+		return c.Interval.String(), nil
+	}
+
+	return "", nil
 }
 
 type Prototypes []Prototype

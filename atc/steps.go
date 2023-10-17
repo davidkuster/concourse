@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Step is an "envelope" type, acting as a wrapper to handle the marshaling and
@@ -137,6 +139,119 @@ func (step Step) MarshalJSON() ([]byte, error) {
 
 // See the note about json tags here: https://golang.org/pkg/encoding/json/#Marshal
 func deleteKnownFields(rawStepConfig map[string]*json.RawMessage, step StepConfig) {
+	stepType := reflect.TypeOf(step).Elem()
+	for i := 0; i < stepType.NumField(); i++ {
+		field := stepType.Field(i)
+		jsonTag := field.Tag.Get("json")
+		if jsonTag == "-" {
+			continue
+		}
+		jsonTagParts := strings.Split(jsonTag, ",")
+		if len(jsonTagParts) < 1 {
+			continue
+		}
+		jsonKey := jsonTagParts[0]
+		if jsonKey == "" {
+			jsonKey = field.Name
+		}
+		delete(rawStepConfig, jsonKey)
+	}
+}
+
+func (step *Step) UnmarshalYAML(node *yaml.Node) error {
+	var rawStepConfig map[string]*yaml.Node
+	if err := node.Decode(&rawStepConfig); err != nil {
+		return err
+	}
+
+	var prevStep StepWrapper
+	var coreStepDeclared bool
+	for _, s := range StepPrecedence {
+		_, found := rawStepConfig[s.Key]
+		if !found {
+			continue
+		}
+
+		curStep := s.New()
+
+		err := rawStepConfig[s.Key].Decode(curStep)
+		if err != nil {
+			return MalformedStepError{
+				StepType: s.Key,
+				Err:      err,
+			}
+		}
+
+		if step.Config == nil {
+			step.Config = curStep
+		}
+
+		if prevStep != nil {
+			prevStep.Wrap(curStep)
+		}
+
+		deleteKnownFieldsYAML(rawStepConfig, curStep)
+
+		if wrapper, isWrapper := curStep.(StepWrapper); isWrapper {
+			prevStep = wrapper
+		} else {
+			coreStepDeclared = true
+			break
+		}
+	}
+
+	if step.Config == nil {
+		return ErrNoStepConfigured
+	}
+
+	if !coreStepDeclared {
+		return ErrNoCoreStepDeclared
+	}
+
+	if len(rawStepConfig) != 0 {
+		// Convert remaining yaml.Nodes to json.RawMessage for compatibility.
+		unknownFields := make(map[string]*json.RawMessage)
+		for k, v := range rawStepConfig {
+			data, err := yaml.Marshal(v)
+			if err != nil {
+				return err
+			}
+			rawMsg := json.RawMessage(data)
+			unknownFields[k] = &rawMsg
+		}
+		step.UnknownFields = unknownFields
+	}
+
+	return nil
+}
+
+func (step Step) MarshalYAML() (interface{}, error) {
+	fields := make(map[string]interface{})
+
+	unwrapped := step.Config
+	for unwrapped != nil {
+		// Convert StepConfig to map for merging
+		yamlData, err := yaml.Marshal(unwrapped)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := yaml.Unmarshal(yamlData, &fields); err != nil {
+			return nil, err
+		}
+
+		// Unwrap if it's a StepWrapper
+		if wrapper, isWrapper := unwrapped.(StepWrapper); isWrapper {
+			unwrapped = wrapper.Unwrap()
+		} else {
+			break
+		}
+	}
+
+	return fields, nil
+}
+
+func deleteKnownFieldsYAML(rawStepConfig map[string]*yaml.Node, step StepConfig) {
 	stepType := reflect.TypeOf(step).Elem()
 	for i := 0; i < stepType.NumField(); i++ {
 		field := stepType.Field(i)
@@ -483,9 +598,9 @@ func (config *AcrossVarConfig) UnmarshalJSON(data []byte) error {
 }
 
 type AcrossStep struct {
-	Step     StepConfig        `json:"-"`
-	Vars     []AcrossVarConfig `json:"across"`
-	FailFast bool              `json:"fail_fast,omitempty"`
+	Step     StepConfig        `json:"-" yaml:"-"`
+	Vars     []AcrossVarConfig `json:"across" yaml:"across"`
+	FailFast bool              `json:"fail_fast,omitempty" yaml:"fail_fast,omitempty"`
 }
 
 func (step *AcrossStep) ParseJSON(data []byte) error {
@@ -505,8 +620,8 @@ func (step *AcrossStep) Unwrap() StepConfig {
 }
 
 type RetryStep struct {
-	Step     StepConfig `json:"-"`
-	Attempts int        `json:"attempts"`
+	Step     StepConfig `json:"-" yaml:"-"`
+	Attempts int        `json:"attempts" yaml:"attempts"`
 }
 
 func (step *RetryStep) Wrap(sub StepConfig) {
@@ -522,7 +637,7 @@ func (step *RetryStep) Visit(v StepVisitor) error {
 }
 
 type TimeoutStep struct {
-	Step StepConfig `json:"-"`
+	Step StepConfig `json:"-" yaml:"-"`
 
 	// it's very tempting to make this a Duration type, but that would probably
 	// prevent using `((vars))` to parameterize it
@@ -542,8 +657,8 @@ func (step *TimeoutStep) Visit(v StepVisitor) error {
 }
 
 type OnSuccessStep struct {
-	Step StepConfig `json:"-"`
-	Hook Step       `json:"on_success"`
+	Step StepConfig `json:"-" yaml:"-"`
+	Hook Step       `json:"on_success" yaml:"on_success"`
 }
 
 func (step *OnSuccessStep) Wrap(sub StepConfig) {
@@ -559,8 +674,8 @@ func (step *OnSuccessStep) Visit(v StepVisitor) error {
 }
 
 type OnFailureStep struct {
-	Step StepConfig `json:"-"`
-	Hook Step       `json:"on_failure"`
+	Step StepConfig `json:"-" yaml:"-"`
+	Hook Step       `json:"on_failure" yaml:"on_failure"`
 }
 
 func (step *OnFailureStep) Wrap(sub StepConfig) {
@@ -576,8 +691,8 @@ func (step *OnFailureStep) Visit(v StepVisitor) error {
 }
 
 type OnErrorStep struct {
-	Step StepConfig `json:"-"`
-	Hook Step       `json:"on_error"`
+	Step StepConfig `json:"-" yaml:"-"`
+	Hook Step       `json:"on_error" yaml:"on_error"`
 }
 
 func (step *OnErrorStep) Wrap(sub StepConfig) {
@@ -593,8 +708,8 @@ func (step *OnErrorStep) Visit(v StepVisitor) error {
 }
 
 type OnAbortStep struct {
-	Step StepConfig `json:"-"`
-	Hook Step       `json:"on_abort"`
+	Step StepConfig `json:"-" yaml:"-"`
+	Hook Step       `json:"on_abort" yaml:"on_abort"`
 }
 
 func (step *OnAbortStep) Wrap(sub StepConfig) {
@@ -610,8 +725,8 @@ func (step *OnAbortStep) Visit(v StepVisitor) error {
 }
 
 type EnsureStep struct {
-	Step StepConfig `json:"-"`
-	Hook Step       `json:"ensure"`
+	Step StepConfig `json:"-" yaml:"-"`
+	Hook Step       `json:"ensure" yaml:"ensure"`
 }
 
 func (step *EnsureStep) Wrap(sub StepConfig) {
@@ -662,6 +777,14 @@ func (c *MaxInFlightConfig) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(c.Limit)
+}
+
+func (c *MaxInFlightConfig) MarshalYAML() (interface{}, error) {
+	if c.All {
+		return MaxInFlightAll, nil
+	}
+
+	return c.Limit, nil
 }
 
 func (c *MaxInFlightConfig) EffectiveLimit(numSteps int) int {
@@ -733,6 +856,22 @@ func (c *VersionConfig) MarshalJSON() ([]byte, error) {
 	return json.Marshal("")
 }
 
+func (c *VersionConfig) MarshalYAML() (interface{}, error) {
+	if c.Latest {
+		return VersionLatest, nil
+	}
+
+	if c.Every {
+		return VersionEvery, nil
+	}
+
+	if c.Pinned != nil {
+		return c.Pinned, nil
+	}
+
+	return yaml.Marshal("")
+}
+
 const InputsAll = "all"
 const InputsDetect = "detect"
 
@@ -790,6 +929,22 @@ func (c InputsConfig) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal("")
+}
+
+func (c InputsConfig) MarshalYAML() (interface{}, error) {
+	if c.All {
+		return InputsAll, nil
+	}
+
+	if c.Detect {
+		return InputsDetect, nil
+	}
+
+	if c.Specified != nil {
+		return c.Specified, nil
+	}
+
+	return "", nil
 }
 
 func unmarshalStrict(data []byte, to interface{}) error {
