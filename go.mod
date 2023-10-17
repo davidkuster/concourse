@@ -17,7 +17,6 @@ require (
 	github.com/aryann/difflib v0.0.0-20210328193216-ff5ff6dc229b
 	github.com/aws/aws-sdk-go v1.45.25
 	github.com/caarlos0/env/v6 v6.10.1
-	github.com/caarlos0/env/v9 v9.0.0
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/concourse/dex v1.8.0
 	github.com/concourse/flag/v2 v2.0.2
@@ -74,7 +73,6 @@ require (
 	github.com/tedsuo/rata v1.0.1-0.20170830210128-07d200713958
 	github.com/txn2/txeh v1.5.4
 	github.com/vbauerster/mpb/v4 v4.12.2
-	github.com/vbauerster/mpb/v8 v8.6.2
 	github.com/vito/go-interact v1.0.1
 	github.com/vito/go-sse v1.0.0
 	github.com/vito/houdini v1.1.3
