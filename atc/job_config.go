@@ -20,7 +20,7 @@ type JobConfig struct {
 	OnError   *Step `json:"on_error,omitempty" yaml:"on_error,omitempty"`
 	Ensure    *Step `json:"ensure,omitempty" yaml:"ensure,omitempty"`
 
-	PlanSequence []Step `json:"plan" yaml:"plan"`
+	PlanSequence []Step `json:"plan" yaml:"plan,omitempty"`
 }
 
 type BuildLogRetention struct {

@@ -158,73 +158,6 @@ func deleteKnownFields(rawStepConfig map[string]*json.RawMessage, step StepConfi
 	}
 }
 
-func (step *Step) UnmarshalYAML(node *yaml.Node) error {
-	var rawStepConfig map[string]*yaml.Node
-	if err := node.Decode(&rawStepConfig); err != nil {
-		return err
-	}
-
-	var prevStep StepWrapper
-	var coreStepDeclared bool
-	for _, s := range StepPrecedence {
-		_, found := rawStepConfig[s.Key]
-		if !found {
-			continue
-		}
-
-		curStep := s.New()
-
-		err := rawStepConfig[s.Key].Decode(curStep)
-		if err != nil {
-			return MalformedStepError{
-				StepType: s.Key,
-				Err:      err,
-			}
-		}
-
-		if step.Config == nil {
-			step.Config = curStep
-		}
-
-		if prevStep != nil {
-			prevStep.Wrap(curStep)
-		}
-
-		deleteKnownFieldsYAML(rawStepConfig, curStep)
-
-		if wrapper, isWrapper := curStep.(StepWrapper); isWrapper {
-			prevStep = wrapper
-		} else {
-			coreStepDeclared = true
-			break
-		}
-	}
-
-	if step.Config == nil {
-		return ErrNoStepConfigured
-	}
-
-	if !coreStepDeclared {
-		return ErrNoCoreStepDeclared
-	}
-
-	if len(rawStepConfig) != 0 {
-		// Convert remaining yaml.Nodes to json.RawMessage for compatibility.
-		unknownFields := make(map[string]*json.RawMessage)
-		for k, v := range rawStepConfig {
-			data, err := yaml.Marshal(v)
-			if err != nil {
-				return err
-			}
-			rawMsg := json.RawMessage(data)
-			unknownFields[k] = &rawMsg
-		}
-		step.UnknownFields = unknownFields
-	}
-
-	return nil
-}
-
 func (step Step) MarshalYAML() (interface{}, error) {
 	fields := make(map[string]interface{})
 
@@ -249,26 +182,6 @@ func (step Step) MarshalYAML() (interface{}, error) {
 	}
 
 	return fields, nil
-}
-
-func deleteKnownFieldsYAML(rawStepConfig map[string]*yaml.Node, step StepConfig) {
-	stepType := reflect.TypeOf(step).Elem()
-	for i := 0; i < stepType.NumField(); i++ {
-		field := stepType.Field(i)
-		jsonTag := field.Tag.Get("json")
-		if jsonTag == "-" {
-			continue
-		}
-		jsonTagParts := strings.Split(jsonTag, ",")
-		if len(jsonTagParts) < 1 {
-			continue
-		}
-		jsonKey := jsonTagParts[0]
-		if jsonKey == "" {
-			jsonKey = field.Name
-		}
-		delete(rawStepConfig, jsonKey)
-	}
 }
 
 // StepConfig is implemented by all step types.
@@ -496,12 +409,12 @@ func (step *RunStep) Visit(v StepVisitor) error {
 }
 
 type SetPipelineStep struct {
-	Name         string       `json:"set_pipeline"`
-	File         string       `json:"file,omitempty"`
-	Team         string       `json:"team,omitempty"`
-	Vars         Params       `json:"vars,omitempty"`
-	VarFiles     []string     `json:"var_files,omitempty"`
-	InstanceVars InstanceVars `json:"instance_vars,omitempty"`
+	Name         string       `json:"set_pipeline" yaml:"set_pipeline"`
+	File         string       `json:"file,omitempty" yaml:"file,omitempty"`
+	Team         string       `json:"team,omitempty" yaml:"team,omitempty"`
+	Vars         Params       `json:"vars,omitempty" yaml:"vars,omitempty"`
+	VarFiles     []string     `json:"var_files,omitempty" yaml:"var_files,omitempty"`
+	InstanceVars InstanceVars `json:"instance_vars,omitempty" yaml:"instance_vars,omitempty"`
 }
 
 func (step *SetPipelineStep) Visit(v StepVisitor) error {
@@ -509,10 +422,10 @@ func (step *SetPipelineStep) Visit(v StepVisitor) error {
 }
 
 type LoadVarStep struct {
-	Name   string `json:"load_var"`
-	File   string `json:"file,omitempty"`
-	Format string `json:"format,omitempty"`
-	Reveal bool   `json:"reveal,omitempty"`
+	Name   string `json:"load_var" yaml:"load_var"`
+	File   string `json:"file,omitempty" yaml:"file,omitempty"`
+	Format string `json:"format,omitempty" yaml:"format,omitempty"`
+	Reveal bool   `json:"reveal,omitempty" yaml:"reveal,omitempty"`
 }
 
 func (step *LoadVarStep) Visit(v StepVisitor) error {
@@ -520,7 +433,7 @@ func (step *LoadVarStep) Visit(v StepVisitor) error {
 }
 
 type TryStep struct {
-	Step Step `json:"try"`
+	Step Step `json:"try" yaml:"try"`
 }
 
 func (step *TryStep) Visit(v StepVisitor) error {
@@ -528,7 +441,7 @@ func (step *TryStep) Visit(v StepVisitor) error {
 }
 
 type DoStep struct {
-	Steps []Step `json:"do"`
+	Steps []Step `json:"do" yaml:"do"`
 }
 
 func (step *DoStep) Visit(v StepVisitor) error {
@@ -536,7 +449,7 @@ func (step *DoStep) Visit(v StepVisitor) error {
 }
 
 type InParallelStep struct {
-	Config InParallelConfig `json:"in_parallel"`
+	Config InParallelConfig `json:"in_parallel" yaml:"in_parallel"`
 }
 
 func (step *InParallelStep) Visit(v StepVisitor) error {
@@ -544,9 +457,9 @@ func (step *InParallelStep) Visit(v StepVisitor) error {
 }
 
 type InParallelConfig struct {
-	Steps    []Step `json:"steps,omitempty"`
-	Limit    int    `json:"limit,omitempty"`
-	FailFast bool   `json:"fail_fast,omitempty"`
+	Steps    []Step `json:"steps,omitempty" yaml:"steps,omitempty"`
+	Limit    int    `json:"limit,omitempty" yaml:"limit,omitempty"`
+	FailFast bool   `json:"fail_fast,omitempty" yaml:"fail_fast,omitempty"`
 }
 
 func (c *InParallelConfig) UnmarshalJSON(payload []byte) error {
@@ -579,9 +492,9 @@ func (c *InParallelConfig) UnmarshalJSON(payload []byte) error {
 }
 
 type AcrossVarConfig struct {
-	Var         string             `json:"var"`
-	Values      interface{}        `json:"values,omitempty"`
-	MaxInFlight *MaxInFlightConfig `json:"max_in_flight,omitempty"`
+	Var         string             `json:"var" yaml:"var"`
+	Values      interface{}        `json:"values,omitempty" yaml:"values,omitempty"`
+	MaxInFlight *MaxInFlightConfig `json:"max_in_flight,omitempty" yaml:"max_in_flight,omitempty"`
 }
 
 func (config *AcrossVarConfig) UnmarshalJSON(data []byte) error {
