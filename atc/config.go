@@ -178,26 +178,26 @@ func (c VarSourceConfigs) OrderByDependency() (VarSourceConfigs, error) {
 type ResourceConfig struct {
 	Name                 string      `json:"name" yaml:"name"`
 	OldName              string      `json:"old_name,omitempty" yaml:"old_name,omitempty"`
-	Public               bool        `json:"public,omitempty" yaml:"public,omitempty"`
-	WebhookToken         string      `json:"webhook_token,omitempty" yaml:"webhook_token,omitempty"`
 	Type                 string      `json:"type" yaml:"type"`
-	Source               Source      `json:"source" yaml:"source"`
+	Public               bool        `json:"public,omitempty" yaml:"public,omitempty"`
 	CheckEvery           *CheckEvery `json:"check_every,omitempty" yaml:"check_every,omitempty"`
 	CheckTimeout         string      `json:"check_timeout,omitempty" yaml:"check_timeout,omitempty"`
 	Tags                 Tags        `json:"tags,omitempty" yaml:"tags,omitempty"`
+	WebhookToken         string      `json:"webhook_token,omitempty" yaml:"webhook_token,omitempty"`
 	Version              Version     `json:"version,omitempty" yaml:"version,omitempty"`
 	Icon                 string      `json:"icon,omitempty" yaml:"icon,omitempty"`
 	ExposeBuildCreatedBy bool        `json:"expose_build_created_by,omitempty" yaml:"expose_build_created_by,omitempty"`
+	Source               Source      `json:"source" yaml:"source"`
 }
 
 type ResourceType struct {
 	Name       string      `json:"name" yaml:"name"`
 	Type       string      `json:"type" yaml:"type"`
-	Source     Source      `json:"source" yaml:"source"`
 	Defaults   Source      `json:"defaults,omitempty" yaml:"defaults,omitempty"`
 	Privileged bool        `json:"privileged,omitempty" yaml:"privileged,omitempty"`
 	CheckEvery *CheckEvery `json:"check_every,omitempty" yaml:"check_every,omitempty"`
 	Tags       Tags        `json:"tags,omitempty" yaml:"tags,omitempty"`
+	Source     Source      `json:"source" yaml:"source"`
 	Params     Params      `json:"params,omitempty" yaml:"params,omitempty"`
 }
 
