@@ -163,13 +163,21 @@ func (step Step) MarshalYAML() (interface{}, error) {
 
 	unwrapped := step.Config
 	for unwrapped != nil {
-		// Convert StepConfig to map for merging
-		yamlData, err := yaml.Marshal(unwrapped)
-		if err != nil {
+		node := yaml.Node{}
+		if err := node.Encode(&unwrapped); err != nil {
 			return nil, err
 		}
 
-		if err := yaml.Unmarshal(yamlData, &fields); err != nil {
+		var buf bytes.Buffer
+		encoder := yaml.NewEncoder(&buf)
+		if err := encoder.Encode(&node); err != nil {
+			return nil, err
+		}
+		if err := encoder.Close(); err != nil {
+			return nil, err
+		}
+
+		if err := yaml.Unmarshal(buf.Bytes(), &fields); err != nil {
 			return nil, err
 		}
 
