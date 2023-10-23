@@ -159,37 +159,12 @@ func deleteKnownFields(rawStepConfig map[string]*json.RawMessage, step StepConfi
 }
 
 func (step Step) MarshalYAML() (interface{}, error) {
-	fields := make(map[string]interface{})
-
 	unwrapped := step.Config
-	for unwrapped != nil {
-		node := yaml.Node{}
-		if err := node.Encode(&unwrapped); err != nil {
-			return nil, err
-		}
-
-		var buf bytes.Buffer
-		encoder := yaml.NewEncoder(&buf)
-		if err := encoder.Encode(&node); err != nil {
-			return nil, err
-		}
-		if err := encoder.Close(); err != nil {
-			return nil, err
-		}
-
-		if err := yaml.Unmarshal(buf.Bytes(), &fields); err != nil {
-			return nil, err
-		}
-
-		// Unwrap if it's a StepWrapper
-		if wrapper, isWrapper := unwrapped.(StepWrapper); isWrapper {
-			unwrapped = wrapper.Unwrap()
-		} else {
-			break
-		}
+	node := yaml.Node{}
+	if err := node.Encode(&unwrapped); err != nil {
+		return nil, err
 	}
-
-	return fields, nil
+	return node, nil
 }
 
 // StepConfig is implemented by all step types.

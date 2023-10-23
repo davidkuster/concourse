@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestConfigFormatting(t *testing.T) {
+func TestConfigFormatting1(t *testing.T) {
 	p := `
 # groups!
 groups:
@@ -52,6 +52,52 @@ jobs:
               input_mapping:
                 code: pull-request
               task: pull-request-lint
+`
+
+	var config Config
+	if err := UnmarshalConfig([]byte(p), &config); err != nil {
+		t.Fatalf("error unmarshaling yaml %s: %v", p, err)
+	}
+
+	node := yaml.Node{}
+	if err := node.Encode(&config); err != nil {
+		t.Errorf("error encoding yaml: %v", err)
+	}
+
+	var buf bytes.Buffer
+	encoder := yaml.NewEncoder(&buf)
+	encoder.SetIndent(2)
+	if err := encoder.Encode(&node); err != nil {
+		t.Errorf("error encoding node: %v", err)
+	}
+	if err := encoder.Close(); err != nil {
+		t.Errorf("error closing encoder: %v", err)
+	}
+
+	fmt.Printf("output = %s", buf.String())
+}
+
+func TestConfigFormatting2(t *testing.T) {
+	p := `
+# jobs!
+jobs:
+
+        # mis-aligned head comment
+  - build_logs_to_retain: 10
+    ensure:
+      put: resource-to-always-put
+    name: job-1
+    on_failure:
+      put: resource-to-put-on-failure
+       # mis-aligned tail comment on put
+    plan:
+      - file: /path/to/script.sh
+        privileged: true
+        task: task-1
+      - get: resource-to-get
+        trigger: true
+       # mis-aligned tail comment on get
+    serial: true
 `
 
 	var config Config
