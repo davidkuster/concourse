@@ -34,7 +34,7 @@ var ErrNoCoreStepDeclared = errors.New("no core step type declared (e.g. get, pu
 // construct an empty StepConfig, and then json.Unmarshal is called on it to parse
 // the data.
 //
-// For step modifiers like `timeout:` and `attempts:` they eventuallly wrap a
+// For step modifiers like `timeout:` and `attempts:` they eventually wrap a
 // core step type (e.g. get, put, task etc.). Core step types do not wrap other
 // steps.
 //
@@ -158,13 +158,34 @@ func deleteKnownFields(rawStepConfig map[string]*json.RawMessage, step StepConfi
 	}
 }
 
+// MarshalYAML marshals step configuration in multiple passes, looping and
+// calling .Unwrap to marshal all nested steps into one aggregated yaml.Node.
 func (step Step) MarshalYAML() (interface{}, error) {
+	var aggregate yaml.Node
+
 	unwrapped := step.Config
-	node := yaml.Node{}
-	if err := node.Encode(&unwrapped); err != nil {
-		return nil, err
+	for unwrapped != nil {
+		payload := yaml.Node{}
+		if err := payload.Encode(&unwrapped); err != nil {
+			return nil, err
+		}
+
+		if aggregate.Kind == 0 {
+			// the first time through use the unwrapped node
+			aggregate = payload
+		} else {
+			// on subsequent iterations build up the aggregated node's content map
+			aggregate.Content = append(payload.Content, aggregate.Content...)
+		}
+
+		if wrapper, isWrapper := unwrapped.(StepWrapper); isWrapper {
+			unwrapped = wrapper.Unwrap()
+		} else {
+			break
+		}
 	}
-	return node, nil
+
+	return aggregate, nil
 }
 
 // StepConfig is implemented by all step types.
@@ -765,7 +786,7 @@ func (c *VersionConfig) MarshalYAML() (interface{}, error) {
 		return c.Pinned, nil
 	}
 
-	return yaml.Marshal("")
+	return "", nil
 }
 
 const InputsAll = "all"
